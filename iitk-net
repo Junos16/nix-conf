@@ -1,0 +1,153 @@
+#!/usr/bin/env bash
+
+set -u
+
+GATEWAY="https://gateway.iitk.ac.in:1003"
+CREDENTIALS="${XDG_CONFIG_HOME:-$HOME/.config}/iitk-net/credentials"
+
+log() {
+    printf '[%s] %s\n' "$(date '+%F %T')" "$*"
+}
+
+if [[ ! -r "$CREDENTIALS" ]]; then
+    log "Cannot read credentials file: $CREDENTIALS"
+    exit 1
+fi
+
+USERNAME="$(sed -n '1p' "$CREDENTIALS")"
+PASSWORD="$(sed -n '2p' "$CREDENTIALS")"
+
+if [[ -z "$USERNAME" || -z "$PASSWORD" ]]; then
+    log "Credentials file must contain username on line 1 and password on line 2"
+    exit 1
+fi
+
+# Don't use -k here. We are sending your IITK password, so certificate
+# validation should remain enabled.
+curl_cmd=(
+    curl
+    --silent
+    --show-error
+    --max-time 15
+)
+
+authenticate() {
+    log "Authenticating with IITK Fortinet gateway..."
+
+    #
+    # Asking /logout? gives us a fresh login URL/token.
+    # This causes one brief logout/relogin when the daemon starts.
+    #
+    logout_page="$("${curl_cmd[@]}" "${GATEWAY}/logout?" 2>/dev/null)" || {
+        log "Could not contact IITK gateway"
+        return 1
+    }
+
+    login_url="$(
+        printf '%s' "$logout_page" |
+        grep -oE 'https?://[^"[:space:]]+' |
+        head -n1
+    )"
+
+    # Some Fortinet versions let us use /login? directly.
+    if [[ -z "$login_url" ]]; then
+        login_url="${GATEWAY}/login?"
+    fi
+
+    login_page="$("${curl_cmd[@]}" "$login_url" 2>/dev/null)" || {
+        log "Could not retrieve login page"
+        return 1
+    }
+
+    magic="$(
+        printf '%s' "$login_page" |
+        grep -oE 'name="magic"[[:space:]]+value="[^"]+"' |
+        sed -E 's/.*value="([^"]+)".*/\1/' |
+        head -n1
+    )"
+
+    # Alternate attribute ordering used by some Fortinet versions.
+    if [[ -z "$magic" ]]; then
+        magic="$(
+            printf '%s' "$login_page" |
+            grep -oE '"magic"[[:space:]]+value="[^"]+"' |
+            sed -E 's/.*value="([^"]+)".*/\1/' |
+            head -n1
+        )"
+    fi
+
+    if [[ -z "$magic" ]]; then
+        log "Could not find Fortinet magic token"
+        return 1
+    fi
+
+    response="$(
+        "${curl_cmd[@]}" \
+            --request POST \
+            --data-urlencode "username=${USERNAME}" \
+            --data-urlencode "password=${PASSWORD}" \
+            --data-urlencode "magic=${magic}" \
+            --data-urlencode "submit=Continue" \
+            "${GATEWAY}/" 2>/dev/null
+    )" || {
+        log "Login request failed"
+        return 1
+    }
+
+    if printf '%s' "$response" | grep -qi 'failed'; then
+        log "IITK authentication failed"
+        return 1
+    fi
+
+    KEEPALIVE_URL="$(
+        printf '%s' "$response" |
+        grep -oE 'https?://[^"[:space:]]*keepalive[^"[:space:]]*' |
+        head -n1 |
+        sed 's/&amp;/\&/g'
+    )"
+
+    if [[ -z "$KEEPALIVE_URL" ]]; then
+        log "Login response contained no keepalive URL"
+        return 1
+    fi
+
+    log "Authenticated successfully"
+    return 0
+}
+
+keepalive() {
+    response="$(
+        "${curl_cmd[@]}" "$KEEPALIVE_URL" 2>/dev/null
+    )" || return 1
+
+    # Existing IITK Fortinet pages contain wording about leaving
+    # the authentication window open.
+    if printf '%s' "$response" |
+       grep -Eqi 'leave.*open|keep.*open|authenticated'; then
+        return 0
+    fi
+
+    # Even if the wording changes, an accessible keepalive URL
+    # usually means the request itself is sufficient.
+    return 0
+}
+
+KEEPALIVE_URL=""
+
+while true; do
+    if [[ -z "$KEEPALIVE_URL" ]]; then
+        if ! authenticate; then
+            log "Retrying authentication in 10 seconds..."
+            sleep 10
+            continue
+        fi
+    fi
+
+    sleep 30
+
+    if ! keepalive; then
+        log "Keepalive failed; re-authenticating..."
+        KEEPALIVE_URL=""
+        sleep 2
+    fi
+done
