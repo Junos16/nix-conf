@@ -11,7 +11,7 @@
 
       modules = [
         ./hosts/iitk-lab/configuration.nix
-      ]
+      ];
     };
   };
 }
