@@ -58,6 +58,7 @@
     isNormalUser = true;
     description = "Hriddhit Datta";
     extraGroups = [ "networkmanager" "wheel" ];
+    linger = true;
     packages = with pkgs; [];
   };
 
