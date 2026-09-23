@@ -73,6 +73,7 @@
     git
     curl
     python3
+    pciutils
   ];
 
   # Some programs need SUID wrappers, can be configured further or are

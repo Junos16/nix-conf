@@ -12,28 +12,18 @@
     jq
   ];
 
-  home.file.".local/bin/iitk-net" = {
-    source = ../../iitk-net;
-    executable = true;
-  };
+  programs.git = {
+    enable = true;
 
-  systemd.user.services.iitk-net = {
-    Unit = {
-      Description = "IITK Fortinet Internet Keepalive";
-    };
+    settings = {
+      user = {
+        name = "Hriddhit Datta";
+        email = "hriddhitdatta2002@gmail.com";
+      };
 
-    Service = {
-      Type = "simple";
-      ExecStart = "%h/.local/bin/iitk-net";
-      Restart = "always";
-      RestartSec = 5;
-    };
-
-    Install = {
-      WantedBy = [ "default.target" ];
+      init.defaultBranch = "main";
     };
   };
-
 
   home.stateVersion = "26.05";
 }
