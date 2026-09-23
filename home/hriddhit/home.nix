@@ -26,6 +26,60 @@
   };
 
   programs.foot.enable = true;
+  programs.fuzzel.enable = true;
+
+  programs.waybar = {
+    enable = true;
+    
+    settings = {
+      mainBar = {
+        layer = "top";
+        position = "top";
+
+        modules-left = [
+          "sway/workspaces"
+        ];
+  
+        modules-center = [
+          "sway/window"
+        ];
+
+        modules-right = [
+          "clock"
+        ];
+   
+        clock = {
+          format = "{:%a %d %b  %H:%M}";
+        };
+      };
+    };
+
+    style = ''
+      * {
+        border: none;
+        border-radius: 0;
+        font-size: 13px;
+      }
+ 
+      window#waybar {
+        background: #1e1e2e;
+        color: #cdd6f4;
+      }
+
+      #workspaces button {
+        padding: 0 8px;
+        color: #a6adc8;
+      }
+
+      #workspaces button.focused {
+        color: #ffffff;
+      }
+
+      #clock {
+        padding: 0 10px;
+      }
+    '';
+  };
 
   xdg.configFile."sway/config".text = ''
     include /etc/sway/config.d/*
@@ -35,6 +89,9 @@
     
     # Terminal
     bindsym $mod+Return exec $term
+
+    # Menu
+    bindsym $mod+d exec $menu
 
     #Close focused window
     bindsym $mod+Shift+q kill
@@ -70,6 +127,9 @@
 
     bindsym $mod+Shift+c reload
     bindsym $mod+Shift+e exit
+    
+    exec waybar
+    output * bg #11111b solid_color
   '';
 
   home.stateVersion = "26.05";
