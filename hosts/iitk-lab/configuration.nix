@@ -84,6 +84,12 @@
   #   enableSSHSupport = true;
   # };
 
+  programs.sway = {
+    enable = true;
+    
+    extraPackages = [];
+  };
+
   # List services that you want to enable:
 
   # Enable the OpenSSH daemon.
