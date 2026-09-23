@@ -21,10 +21,12 @@
 
 	{
 	  home-manager.useGlobalPkgs = true;
-	  home-manager.users.hriddhit = [
-	    import ./home/hriddhit/home.nix
-            import ./hosts/iitk-lab/home.nix
-          ];
+	  home-manager.users.hriddhit = {
+	    imports = [
+	      ./home/hriddhit/home.nix
+              ./hosts/iitk-lab/home.nix
+            ];
+          };
 	}
       ];
     };

@@ -2,7 +2,7 @@
 
 {  
   home.file.".local/bin/iitk-net" = {
-    source = ../../iitk-net;
+    source = ./scripts/iitk-net;
     executable = true;
   };
 
