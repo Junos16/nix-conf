@@ -10,6 +10,9 @@
     fzf
     ripgrep
     jq
+    qpdfview
+
+    pavucontrol
   ];
 
   programs.git = {
@@ -27,6 +30,12 @@
 
   programs.foot.enable = true;
   programs.fuzzel.enable = true;
+  programs.zathura.enable = true;
+
+  programs.zen_browser = {
+    enable = true;
+    setAsDefaultBrowser = true;
+  };
 
   programs.waybar = {
     enable = true;
@@ -86,6 +95,7 @@
     
     set $mod Mod4
     set $term foot
+    set $menu fuzzel
     
     # Terminal
     bindsym $mod+Return exec $term
