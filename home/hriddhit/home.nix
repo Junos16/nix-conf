@@ -41,6 +41,8 @@
     enable = true;
     setAsDefaultBrowser = true;
   };
+ 
+  programs.swaylock.enable = true;
 
   programs.waybar = {
     enable = true;
@@ -122,6 +124,9 @@
     bindsym Shift+Print exec grim - | wl-copy
     bindsym $mod+s exec grim - | wl-copy
 
+    # Lockscreen 
+    bindsym $mod+Ctrl+l exec swaylock -f
+
     #Close focused window
     bindsym $mod+Shift+q kill
 
@@ -162,6 +167,29 @@
   '';
 
   services.mako.enable = true;
+  services.polkit-gnome.enable = true;
+
+  services.swayidle = {
+    enable = true;
+
+    timeouts = [
+      {
+        timeout = 600;
+        command = "${pkgs.swaylock}/bin/swaylock -f";
+      }
+
+      {
+	timeout = 900;
+	command = "${pkgs.sway}/bin/swaymsg \"output * power off\"";
+	resumeCommand = "${pkgs.sway}/bin/swaymsg \"output * power on\"";
+      }
+    ];
+
+    events = {
+      "before-sleep" = "${pkgs.swaylock}/bin/swaylock -f";
+    };
+  };
+
 
   home.stateVersion = "26.05";
 }
