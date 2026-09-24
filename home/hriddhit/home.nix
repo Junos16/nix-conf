@@ -31,8 +31,9 @@
   programs.foot.enable = true;
   programs.fuzzel.enable = true;
   programs.zathura.enable = true;
+  programs.firefox.enable = true;
 
-  programs.zen_browser = {
+  programs.zen-browser = {
     enable = true;
     setAsDefaultBrowser = true;
   };
