@@ -3,6 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
+    nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
 
     home-manager = {
       url = "github:nix-community/home-manager/release-26.05";
@@ -15,7 +16,13 @@
     };
   };
 
-  outputs = { self, nixpkgs, home-manager, zen-browser }: {
+  outputs = { 
+    self, 
+    nixpkgs, 
+    nixpkgs-unstable,
+    home-manager, 
+    zen-browser 
+  }: {
     nixosConfigurations.iitk-lab = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
 
@@ -26,6 +33,7 @@
 
 	{
 	  home-manager.useGlobalPkgs = true;
+
 	  home-manager.users.hriddhit = {
 	    imports = [
               zen-browser.homeModules.twilight
@@ -33,6 +41,10 @@
 	      ./home/hriddhit/home.nix
               ./hosts/iitk-lab/home.nix
             ];
+          };
+
+          home-manager.extraSpecialArgs = {
+            codexPackage = nixpkgs-unstable.legacyPackages.x86_64-linux.codex;
           };
 	}
       ];

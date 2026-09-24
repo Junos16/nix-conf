@@ -1,10 +1,10 @@
-{ pkgs, ... }:
+{ pkgs, codexPackage, ... }:
 
 {
   home.username = "hriddhit";
   home.homeDirectory = "/home/hriddhit";
 
-  home.packages = with pkgs; [
+  home.packages = (with pkgs; [
     tmux
     fastfetch
     fzf
@@ -25,7 +25,9 @@
     slurp
 
     pavucontrol
-  ];
+  ]) ++ ([
+    codexPackage
+  ]);
 
   programs.git = {
     enable = true;
