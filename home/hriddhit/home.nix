@@ -10,8 +10,16 @@
     fzf
     ripgrep
     jq
-    qpdfview
+    yazi
     
+    qpdfview
+    krita
+    rnote
+
+    spotify
+    discord
+    zoom
+
     wl-clipboard
     grim
     slurp
