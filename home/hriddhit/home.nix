@@ -11,6 +11,10 @@
     ripgrep
     jq
     qpdfview
+    
+    wl-clipboard
+    grim
+    slurp
 
     pavucontrol
   ];
@@ -55,11 +59,19 @@
         ];
 
         modules-right = [
+	  "pulseaudio"
           "clock"
         ];
    
         clock = {
           format = "{:%a %d %b  %H:%M}";
+        };
+         
+        pulseaudio = {
+          format = "{volume}%";
+          format-muted = "mute";
+
+          on-click = "pavucontrol";
         };
       };
     };
@@ -104,6 +116,12 @@
     # Menu
     bindsym $mod+d exec $menu
 
+    # Screenshots
+    bindsym Print exec grim -g "$(slurp)" - | wl-copy
+    bindsym $mod+Shift+s  exec grim -g "$(slurp)" - | wl-copy
+    bindsym Shift+Print exec grim - | wl-copy
+    bindsym $mod+s exec grim - | wl-copy
+
     #Close focused window
     bindsym $mod+Shift+q kill
 
@@ -142,6 +160,8 @@
     exec waybar
     output * bg #11111b solid_color
   '';
+
+  services.mako.enable = true;
 
   home.stateVersion = "26.05";
 }
